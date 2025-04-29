@@ -1,0 +1,119 @@
+using System.Collections.Generic;
+
+using UnityEngine;
+using UnityEngine.Events;
+
+using RNG = UnityEngine.Random;
+
+namespace BlackRece.Enemies {
+    
+    public class EnemyManager : MonoBehaviour
+    {
+        [SerializeField] private GameObject[] m_EnemyPrefab;
+        [SerializeField] private int mi_EnemyCount = 10;
+        private List<Enemy> m_Enemies = new List<Enemy>();
+        
+        [SerializeField] private float mf_SpawnRadius = 100.0f;
+        [SerializeField] private UnityEvent<Vector3> m_OnBaseSpawn;
+        private bool mb_HasFort = false;
+        private Vector3 mv3_FortPosition = Vector3.zero;
+        private GameObject m_Fort;
+
+        /*
+        private void OnEnable() {
+            TMC_Timer.AddListener(AlertTags.CGS_ALERT_DAWN, OnDayStart);
+            TMC_Timer.AddListener(AlertTags.CGS_ALERT_DAWN, OnNightStart);
+            
+            //DEBUG
+            InputHandler.OnMouseMiddleClickUp.AddListener(OnBaseSpawn);
+        }
+        
+        private void OnDisable() {
+            TMC_Timer.RemoveListener(AlertTags.CGS_ALERT_DAWN, OnDayStart);
+            TMC_Timer.RemoveListener(AlertTags.CGS_ALERT_DAWN, OnNightStart);
+            
+            //DEBUG
+            InputHandler.OnMouseMiddleClickUp.RemoveListener(OnBaseSpawn);
+        }
+
+        private void Awake() {
+            // get fort object
+            //m_Fort = GameObject.FindGameObjectWithTag("Fort");
+        }
+        */
+        
+        void Update()
+        {
+            
+            if (m_Fort != null) {
+                if (!mb_HasFort) {
+                    // get fort position
+                    mv3_FortPosition = m_Fort.transform.position;
+                    mb_HasFort = true;
+                }
+            }
+            
+        }
+        
+        private void OnNightStart() {
+            if (!mb_HasFort) return;
+            
+            // spawn minions
+            Debug.Log("Night started");
+            SpawnEnemies();
+        }
+        
+        private void OnDayStart() {
+            // remove minions
+            Debug.Log("Day started");
+            RemoveEnemies();
+        }
+        
+        private void SpawnEnemies() {
+            for (int i = 0; i < mi_EnemyCount; i++) {
+                // spawn minions
+                GameObject l_EnemyGO = Instantiate(m_EnemyPrefab[0], GetRandomSpawnPosition(), Quaternion.identity);
+                var l_Enemy = l_EnemyGO.GetComponent<Enemy>();
+                l_Enemy.SetTarget(mv3_FortPosition);
+                m_Enemies.Add(l_Enemy);
+            }
+        }
+        
+        private void RemoveEnemies() {
+            // remove minions
+            foreach (var l_Enemy in m_Enemies) {
+                Destroy(l_Enemy.gameObject);
+            }
+            m_Enemies.Clear();
+        }
+        
+        // Get a random position on the circumference of a circle centered on the fort
+        private Vector3 GetRandomSpawnPosition() {
+            Vector3 l_RandomPosition = Vector3.zero;
+            float l_RandomAngle = RNG.Range(0, 360);
+            l_RandomPosition.x = mv3_FortPosition.x + mf_SpawnRadius * Mathf.Cos(l_RandomAngle);
+            l_RandomPosition.z = mv3_FortPosition.z + mf_SpawnRadius * Mathf.Sin(l_RandomAngle);
+            return l_RandomPosition;
+        }
+
+        /*
+        public void OnBaseSpawn(Vector3 a_Position) {
+            // DEBUG METHOD - REMOVE LATER
+            if (mb_HasFort) return;
+
+            Camera l_cam = Camera.allCameras.FirstOrDefault();
+            if (l_cam == null) {
+                Debug.LogError("No camera found");
+                return;
+            }
+            Ray l_ray = l_cam.ScreenPointToRay(a_Position);
+            Physics.Raycast(l_ray, out RaycastHit l_hit);
+            
+            mv3_FortPosition = l_hit.point;
+            GameObject.CreatePrimitive(PrimitiveType.Sphere).transform.position = mv3_FortPosition;
+            
+            mb_HasFort = true;
+        }
+        */
+    }
+}
