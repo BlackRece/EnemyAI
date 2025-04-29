@@ -2,7 +2,11 @@ using UnityEngine;
     using UnityEngine.AI;
 
 namespace BlackRece.Enemies {
-    [RequireComponent(typeof(NavMeshAgent), typeof(SphereCollider))]
+    [RequireComponent(
+        typeof(NavMeshAgent),
+        typeof(SphereCollider),
+        typeof(Rigidbody)
+    )]
     public class Enemy : MonoBehaviour {
         [SerializeField] private float mf_AttackRange = 0.5f;
         
@@ -14,11 +18,13 @@ namespace BlackRece.Enemies {
         }
         
         private NavMeshAgent m_NavMeshAgent;
+        private Rigidbody m_rigidBody;
         private Vector3 mv3_TargetDestination;
         private Actions me_Action = Actions.Seek;
         
         private void Awake() {
             m_NavMeshAgent = GetComponent<NavMeshAgent>();
+            m_rigidBody = GetComponent<Rigidbody>();
             
             me_Action = Actions.Idle;
         }
@@ -42,6 +48,15 @@ namespace BlackRece.Enemies {
                 case Actions.RangedAttack:
                     break;
             }
+        }
+
+        public void SetBehaviour(int ai_behaviourID) {
+            me_Action = ai_behaviourID switch {
+                1 => Actions.Seek,
+                2 => Actions.MeleeAttack,
+                3 => Actions.RangedAttack,
+                _ => Actions.Idle
+            };
         }
         
         private void Init(Vector3 av3_Position) {
