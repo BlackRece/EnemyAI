@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using UnityEngine;
 using UnityEngine.Events;
@@ -17,7 +19,8 @@ namespace BlackRece.Enemies {
         [SerializeField] private UnityEvent<Vector3> m_OnBaseSpawn;
         private bool mb_HasFort = false;
         private Vector3 mv3_FortPosition = Vector3.zero;
-        private GameObject m_Fort;
+        private GameObject m_Fort = null;
+        private Camera m_Cam = null;
 
         /*
         private void OnEnable() {
@@ -41,10 +44,23 @@ namespace BlackRece.Enemies {
             //m_Fort = GameObject.FindGameObjectWithTag("Fort");
         }
         */
-        
+
+        private void Start() {
+            m_Cam = Camera.allCameras.FirstOrDefault();
+            
+            if (m_Cam == null) {
+                Debug.LogError("No camera found");
+                return;
+            }
+        }
+
         void Update()
         {
-            
+            if (Input.GetMouseButtonUp(0)) {
+                Vector3 l_pos = Input.mousePosition;
+                MarkPos(l_pos);
+            }
+
             if (m_Fort != null) {
                 if (!mb_HasFort) {
                     // get fort position
@@ -68,6 +84,7 @@ namespace BlackRece.Enemies {
             Debug.Log("Day started");
             RemoveEnemies();
         }
+
         
         private void SpawnEnemies() {
             for (int i = 0; i < mi_EnemyCount; i++) {
@@ -96,17 +113,19 @@ namespace BlackRece.Enemies {
             return l_RandomPosition;
         }
 
-        /*
         public void OnBaseSpawn(Vector3 a_Position) {
             // DEBUG METHOD - REMOVE LATER
-            if (mb_HasFort) return;
+            //if (mb_HasFort) return;
 
-            Camera l_cam = Camera.allCameras.FirstOrDefault();
-            if (l_cam == null) {
+            if(m_Cam == null) 
+                m_Cam = Camera.allCameras.FirstOrDefault();
+            
+            if (m_Cam == null) {
                 Debug.LogError("No camera found");
                 return;
             }
-            Ray l_ray = l_cam.ScreenPointToRay(a_Position);
+            
+            Ray l_ray = m_Cam.ScreenPointToRay(a_Position);
             Physics.Raycast(l_ray, out RaycastHit l_hit);
             
             mv3_FortPosition = l_hit.point;
@@ -114,6 +133,15 @@ namespace BlackRece.Enemies {
             
             mb_HasFort = true;
         }
-        */
+
+        private void MarkPos(Vector3 a_Position) {
+            Ray l_ray = m_Cam.ScreenPointToRay(a_Position);
+            Physics.Raycast(l_ray, out RaycastHit l_hit);
+            
+            mv3_FortPosition = l_hit.point;
+            if(m_Fort == null)
+                m_Fort = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            m_Fort.transform.position = mv3_FortPosition;
+        }
     }
 }
