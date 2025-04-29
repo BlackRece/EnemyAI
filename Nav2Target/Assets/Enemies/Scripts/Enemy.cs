@@ -40,8 +40,10 @@ namespace BlackRece.Enemies {
                 
             switch (me_Action) {
                 case Actions.Idle:
+                    m_NavMeshAgent.ResetPath();
                     break;
                 case Actions.Seek:
+                    UpdateAgentDestination(mv3_TargetDestination);
                     break;
                 case Actions.MeleeAttack:
                     break;
@@ -67,12 +69,14 @@ namespace BlackRece.Enemies {
             => m_NavMeshAgent.SetDestination(av3_Destination);
 
         public void SetTarget(GameObject ago_Target) {
-            UpdateAgentDestination(ago_Target.transform.position);
+            mv3_TargetDestination = ago_Target.transform.position;
+            UpdateAgentDestination(mv3_TargetDestination);
             me_Action = Actions.Seek;
         }
 
         public void SetTarget(Vector3 av3_Target) {
-            UpdateAgentDestination(av3_Target);
+            mv3_TargetDestination = av3_Target;
+            UpdateAgentDestination(mv3_TargetDestination);
             me_Action = Actions.Seek;
         }
     }
